@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý & Tính Tiền Lời Hàng Tháng</title>
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <div>
+          <h1>Tính Tiền Lời Hàng Tháng</h1>
+          <p class="subtitle">Quản lý doanh thu, giá vốn và tiền lời theo từng người dùng</p>
+        </div>
+      </div>
+      
+      <!-- Multi-User Profile Switcher -->
+      <div class="user-switcher-container">
+        <div class="user-dropdown-wrapper">
+          <button id="userDropdownBtn" class="btn btn-user-select" title="Chuyển đổi người dùng">
+            <div class="user-avatar-badge">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="user-name-info">
+              <span class="user-label">Không gian làm việc:</span>
+              <strong id="currentUserNameDisplay">Tài khoản chính</strong>
+            </div>
+            <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+          </button>
+
+          <!-- Dropdown Menu -->
+          <div id="userDropdownMenu" class="user-dropdown-menu hidden">
+            <div class="dropdown-header">
+              <span>Danh sách người dùng</span>
+            </div>
+            <div id="usersListContainer" class="users-list-scroll">
+              <!-- Users dynamically rendered here -->
+            </div>
+            <div class="dropdown-divider"></div>
+            <button id="addNewUserBtn" class="dropdown-action-btn">
+              <i class="fa-solid fa-user-plus"></i> Thêm người dùng mới
+            </button>
+            <button id="renameUserBtn" class="dropdown-action-btn">
+              <i class="fa-solid fa-pen"></i> Đổi tên người này
+            </button>
+            <button id="deleteUserBtn" class="dropdown-action-btn text-danger">
+              <i class="fa-solid fa-trash-can"></i> Xóa người này
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Header Action Buttons -->
+      <div class="header-actions">
+        <button id="openTxtModalBtn" class="btn btn-outline-highlight" title="Nhập tự động từ file Notepad (.txt) hoặc dán ghi chú">
+          <i class="fa-regular fa-file-lines"></i>
+          <span>Nhập Notepad (.txt)</span>
+        </button>
+        <button id="openModalBtn" class="btn btn-primary" title="Thêm sản phẩm mới thủ công">
+          <i class="fa-solid fa-plus"></i>
+          <span>Thêm sản phẩm</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-container">
+    
+    <!-- Filter & Month Selector Toolbar -->
+    <section class="toolbar-section">
+      <div class="month-selector">
+        <span class="toolbar-label"><i class="fa-regular fa-calendar-days"></i> Tháng:</span>
+        <button id="prevMonthBtn" class="btn-icon" title="Tháng trước">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <div class="month-input-wrapper">
+          <input type="month" id="selectedMonthInput">
+        </div>
+        <button id="nextMonthBtn" class="btn-icon" title="Tháng sau">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <button id="showAllBtn" class="btn btn-outline" title="Xem tất cả các tháng">
+          <i class="fa-solid fa-border-all"></i>
+          <span>Tất cả</span>
+        </button>
+      </div>
+
+      <div class="search-sort-wrapper">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="searchInput" placeholder="Tìm theo tên sản phẩm...">
+        </div>
+        <select id="sortSelect" class="form-select">
+          <option value="date-desc">Mới nhất trước</option>
+          <option value="date-asc">Cũ nhất trước</option>
+          <option value="profit-desc">Lãi cao nhất</option>
+          <option value="profit-asc">Lãi thấp nhất</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Summary Statistics Dashboard -->
+    <section class="stats-grid">
+      <!-- Total Profit Card -->
+      <div class="stat-card stat-profit" id="profitCard">
+        <div class="stat-header">
+          <span class="stat-title">TỔNG LÃI TRONG THÁNG</span>
+          <div class="stat-icon-badge profit-badge">
+            <i class="fa-solid fa-sack-dollar"></i>
+          </div>
+        </div>
+        <div class="stat-value" id="totalProfitDisplay">0 ₫</div>
+        <div class="stat-subtext" id="profitMarginDisplay">Tỷ suất lợi nhuận: 0%</div>
+      </div>
+
+      <!-- Total Revenue (Sell) Card -->
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-title">TỔNG TIỀN BÁN (DOANH THU)</span>
+          <div class="stat-icon-badge revenue-badge">
+            <i class="fa-solid fa-hand-holding-dollar"></i>
+          </div>
+        </div>
+        <div class="stat-value" id="totalRevenueDisplay">0 ₫</div>
+        <div class="stat-subtext" id="totalItemsDisplay">0 sản phẩm (Tổng SL: 0)</div>
+      </div>
+
+      <!-- Total Cost (Buy) Card -->
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-title">TỔNG TIỀN NHẬP (GIÁ VỐN)</span>
+          <div class="stat-icon-badge cost-badge">
+            <i class="fa-solid fa-cart-shopping"></i>
+          </div>
+        </div>
+        <div class="stat-value" id="totalCostDisplay">0 ₫</div>
+        <div class="stat-subtext" id="totalQuantityDisplay">Tổng số lượng nhập: 0 cái</div>
+      </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="products-section">
+      <div class="section-title-bar">
+        <div class="title-left">
+          <h2>Danh Sách Sản Phẩm</h2>
+          <span class="items-count" id="filteredCountBadge">0 sản phẩm</span>
+          <span class="user-tag-badge" id="activeUserBadge"><i class="fa-solid fa-user"></i> Tài khoản chính</span>
+        </div>
+        <div class="quick-actions">
+          <button id="quickTxtBtn" class="btn-text text-primary" title="Đọc ghi chú từ file Notepad">
+            <i class="fa-regular fa-file-lines"></i> Nhập Notepad (.txt)
+          </button>
+          <button id="exportExcelBtn" class="btn-text text-success" title="Xuất file Excel chuẩn có cột Số Lượng và Hàng Tổng Cộng">
+            <i class="fa-solid fa-file-excel"></i> Xuất Excel (.xls)
+          </button>
+          <button id="exportCsvBtn" class="btn-text" title="Xuất định dạng CSV">
+            <i class="fa-solid fa-file-csv"></i> Xuất CSV
+          </button>
+          <button id="addSampleBtn" class="btn-text" title="Nạp 7 sản phẩm mẫu từ ảnh Notepad">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Dữ liệu mẫu
+          </button>
+        </div>
+      </div>
+
+      <!-- Grid of Product Cards (Mỗi sản phẩm là 1 ô riêng) -->
+      <div id="productsGrid" class="products-grid">
+        <!-- Javascript renders cards here -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="empty-state hidden">
+        <div class="empty-icon">
+          <i class="fa-solid fa-box-open"></i>
+        </div>
+        <h3>Chưa có sản phẩm nào cho người này trong tháng này</h3>
+        <p>Bấm nút <strong>"+"</strong> hoặc <strong>"Nhập Notepad (.txt)"</strong> để ghi chép tiền lời.</p>
+        <button id="emptyStateAddBtn" class="btn btn-primary mt-3">
+          <i class="fa-solid fa-plus"></i> Thêm sản phẩm ngay
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal Popup: Thêm / Sửa sản phẩm (Có Số Lượng) -->
+  <div id="productModal" class="modal-overlay hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-badge-icon">
+            <i class="fa-solid fa-plus" id="modalIcon"></i>
+          </div>
+          <h3 id="modalTitle">Thêm Sản Phẩm Mới</h3>
+        </div>
+        <button id="closeModalBtn" class="modal-close-btn" title="Đóng">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="productForm" autocomplete="off">
+        <input type="hidden" id="editProductId">
+
+        <div class="modal-body">
+          <!-- Tên sản phẩm & Số lượng -->
+          <div class="form-row form-row-3-1">
+            <div class="form-group">
+              <label for="productNameInput">
+                Tên sản phẩm <span class="required">*</span>
+              </label>
+              <div class="input-with-icon">
+                <i class="fa-solid fa-box"></i>
+                <input 
+                  type="text" 
+                  id="productNameInput" 
+                  class="form-control" 
+                  placeholder="Ví dụ: s75 trắng, f75, nova pro..." 
+                  required
+                >
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="quantityInput">
+                Số lượng <span class="required">*</span>
+              </label>
+              <div class="input-with-icon">
+                <i class="fa-solid fa-cubes-stacked"></i>
+                <input 
+                  type="number" 
+                  id="quantityInput" 
+                  class="form-control" 
+                  min="1" 
+                  value="1" 
+                  required
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Đơn giá mua & Đơn giá bán -->
+          <div class="form-row">
+            <!-- Đơn giá mua -->
+            <div class="form-group">
+              <label for="buyPriceInput">
+                Đơn giá nhập / 1 cái <span class="required">*</span>
+              </label>
+              <div class="input-with-icon">
+                <i class="fa-solid fa-cart-arrow-down"></i>
+                <input 
+                  type="text" 
+                  id="buyPriceInput" 
+                  class="form-control price-input" 
+                  placeholder="0" 
+                  required
+                >
+                <span class="currency-unit">₫</span>
+              </div>
+            </div>
+
+            <!-- Đơn giá bán -->
+            <div class="form-group">
+              <label for="sellPriceInput">
+                Đơn giá bán / 1 cái <span class="required">*</span>
+              </label>
+              <div class="input-with-icon">
+                <i class="fa-solid fa-tag"></i>
+                <input 
+                  type="text" 
+                  id="sellPriceInput" 
+                  class="form-control price-input" 
+                  placeholder="0" 
+                  required
+                >
+                <span class="currency-unit">₫</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Preview Banner Lãi tính tự động (nhân theo số lượng) -->
+          <div class="profit-preview-banner" id="profitPreviewBanner">
+            <div class="preview-breakdown">
+              <div class="breakdown-item">
+                <span class="label">Tổng vốn:</span>
+                <strong id="previewTotalCostText">0 ₫</strong>
+              </div>
+              <div class="breakdown-item">
+                <span class="label">Tổng bán:</span>
+                <strong id="previewTotalRevenueText">0 ₫</strong>
+              </div>
+            </div>
+            <div class="preview-profit-box">
+              <span class="preview-label"><i class="fa-solid fa-calculator"></i> Tổng lời:</span>
+              <span id="previewProfitText" class="preview-profit-num">0 ₫</span>
+              <span id="previewMarginText" class="preview-margin-badge">0%</span>
+            </div>
+          </div>
+
+          <!-- Ngày bán -->
+          <div class="form-group">
+            <label for="saleDateInput">
+              Ngày bán <span class="required">*</span>
+            </label>
+            <div class="input-with-icon">
+              <i class="fa-regular fa-calendar-check"></i>
+              <input 
+                type="date" 
+                id="saleDateInput" 
+                class="form-control" 
+                required
+              >
+            </div>
+          </div>
+
+          <!-- Ghi chú tùy chọn -->
+          <div class="form-group">
+            <label for="productNoteInput">Ghi chú (tùy chọn)</label>
+            <textarea 
+              id="productNoteInput" 
+              class="form-control" 
+              rows="2" 
+              placeholder="Khách mua, phụ kiện kèm, kênh bán..."
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="cancelModalBtn" class="btn btn-secondary">
+            Hủy
+          </button>
+          <button type="submit" id="submitProductBtn" class="btn btn-primary">
+            <i class="fa-solid fa-check"></i>
+            <span id="submitBtnText">Xác nhận</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Popup: Nhập từ File TXT / Notepad -->
+  <div id="txtModal" class="modal-overlay hidden">
+    <div class="modal-dialog modal-dialog-lg">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-badge-icon" style="background-color: #ecfdf5; color: #10b981;">
+            <i class="fa-regular fa-file-lines"></i>
+          </div>
+          <div>
+            <h3>Nhập Tự Động Từ File Notepad (.txt)</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
+              Tự động nhận diện số lượng, tên sản phẩm, tiền gốc, tiền bán và tiền lời
+            </p>
+          </div>
+        </div>
+        <button id="closeTxtModalBtn" class="modal-close-btn" title="Đóng">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Khu vực chọn file hoặc kéo thả -->
+        <div class="txt-dropzone" id="txtDropzone">
+          <i class="fa-solid fa-cloud-arrow-up dropzone-icon"></i>
+          <p class="dropzone-text"><strong>Bấm để chọn file .txt</strong> hoặc kéo thả file Notepad vào đây</p>
+          <span class="dropzone-sub">Chấp nhận các file .txt, .log</span>
+          <input type="file" id="txtFileInput" accept=".txt,.log,text/plain" style="display: none;">
+        </div>
+
+        <!-- Hoặc dán trực tiếp văn bản -->
+        <div class="form-group" style="margin-top: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label for="txtPasteArea" style="font-weight: 600; font-size: 0.88rem;">
+              <i class="fa-solid fa-paste"></i> Hoặc dán trực tiếp nội dung ghi chú:
+            </label>
+            <button type="button" id="txtLoadDemoBtn" class="btn-text" style="color: var(--primary); font-size: 0.78rem;">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Dán mẫu từ ảnh của bạn
+            </button>
+          </div>
+          <textarea 
+            id="txtPasteArea" 
+            class="form-control" 
+            rows="6" 
+            placeholder="Dán nội dung Notepad vào đây, ví dụ:&#10;2 s75 trắng: 543.600đ (bán 800k lời 256.400đ) =&#10;1 f75 490k ( bán 750k lời 260k)&#10;1 s75 đen contour: 479k + 36k keycape (lời 285k )&#10;1 nova pro: 800k (bán 900k lời 100k)"
+            style="font-family: monospace; font-size: 0.88rem;"
+          ></textarea>
+        </div>
+
+        <!-- Chọn ngày bán cho đợt nhập này -->
+        <div class="form-group">
+          <label for="txtBatchDateInput" style="font-weight: 600; font-size: 0.88rem;">
+            <i class="fa-regular fa-calendar"></i> Ngày bán cho các sản phẩm này:
+          </label>
+          <input type="date" id="txtBatchDateInput" class="form-control">
+        </div>
+
+        <!-- Bảng xem trước kết quả đọc được -->
+        <div id="txtPreviewSection" class="txt-preview-section hidden">
+          <div class="preview-header-bar">
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main);">
+              <i class="fa-solid fa-circle-check" style="color: #10b981;"></i> 
+              Kết quả nhận diện: <span id="txtParsedCount">0</span> sản phẩm (<span id="txtParsedTotalQty">0</span> cái)
+            </h4>
+            <div id="txtParsedTotalSummary" class="parsed-summary-badges">
+              <!-- Summary badges -->
+            </div>
+          </div>
+
+          <div class="preview-table-container">
+            <table class="preview-table">
+              <thead>
+                <tr>
+                  <th>Tên sản phẩm</th>
+                  <th style="text-align: center;">SL</th>
+                  <th style="text-align: right;">Tổng vốn</th>
+                  <th style="text-align: right;">Tổng bán</th>
+                  <th style="text-align: right;">Tổng lời</th>
+                </tr>
+              </thead>
+              <tbody id="txtPreviewTableBody">
+                <!-- Rows render here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <button type="button" id="cancelTxtModalBtn" class="btn btn-secondary">
+          Hủy
+        </button>
+        <button type="button" id="confirmTxtImportBtn" class="btn btn-primary" disabled>
+          <i class="fa-solid fa-cloud-arrow-down"></i>
+          <span id="confirmTxtBtnText">Xác nhận thêm vào web (0)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Thêm Người Dùng Mới -->
+  <div id="addUserModal" class="modal-overlay hidden">
+    <div class="modal-dialog" style="max-width: 420px;">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-badge-icon" style="background-color: #eff6ff; color: #2563eb;">
+            <i class="fa-solid fa-user-plus"></i>
+          </div>
+          <h3>Thêm Người Dùng Mới</h3>
+        </div>
+        <button id="closeAddUserModalBtn" class="modal-close-btn" title="Đóng">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <form id="addUserForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="newUserNameInput">Tên người dùng / Không gian riêng: <span class="required">*</span></label>
+            <input type="text" id="newUserNameInput" class="form-control" placeholder="Ví dụ: Tuấn, Linh, Kho A, Kho B..." required>
+          </div>
+          <p style="font-size: 0.8rem; color: var(--text-muted);">
+            Dữ liệu sản phẩm, doanh thu và file xuất của người này sẽ hoàn toàn độc lập, không lẫn lộn với người khác.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="cancelAddUserBtn" class="btn btn-secondary">Hủy</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Tạo người dùng</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast hidden">
+    <i class="fa-solid fa-circle-check toast-icon" id="toastIcon"></i>
+    <span id="toastMessage">Thông báo</span>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
